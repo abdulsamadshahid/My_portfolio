@@ -1,0 +1,21 @@
+name: My_Portfolio_Workflow
+
+on: push
+
+jobs:
+    deploy:
+        runs-on: ubuntu-latest
+            steps:
+                -name: auto deploy
+                run: |
+                    echo "${{secrets.id_rsa}}" > id_rsa
+                    chmod 600 id_rsa
+
+                    ssh -i id_rsa -o StrictHostKeyChecking=no ubuntu@52.66.226.205 <<'EOF'
+                    sudo rm -rf My_portfolio
+                    sudo git clone "https://github.com/abdulsamadshahid/My_portfolio"
+                    sudo docker container stop my-portfolio-web_test || true
+                    sudo docker container rm my-portfolio-web_test || true
+                    sudo docker build -t my_portfolio ./My_portfolio/
+                    sudo docker run -d -p 80:80 --name my-portfolio-web_test my_portfolio
+                    EOF
