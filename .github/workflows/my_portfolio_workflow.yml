@@ -11,7 +11,7 @@ jobs:
           echo "${{ secrets.id_rsa }}" > id_rsa
           chmod 600 id_rsa
 
-          ssh -i id_rsa -o StrictHostKeyChecking=no ubuntu@52.66.226.205 << 'EOF'
+          ssh -i id_rsa -o StrictHostKeyChecking=no ubuntu@13.201.39.240 << 'EOF'
             sudo rm -rf My_portfolio
             sudo git clone "https://github.com/abdulsamadshahid/My_portfolio"
             sudo docker container stop my-portfolio-web_test || true
