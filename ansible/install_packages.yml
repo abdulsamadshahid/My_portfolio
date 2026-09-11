@@ -1,0 +1,78 @@
+---
+
+- hosts: all
+  become: true
+  tasks:
+  - name: Install Python pip
+    apt:
+      name: python3-pip
+      state: present
+  - name: Install GPG
+    apt:
+      name: gnupg
+      state: present
+  - name: Create keyrings directory
+    file:
+      path: /etc/apt/keyrings
+      state: directory
+      mode: '0755'
+
+  - name: Download Docker GPG key
+    get_url:
+      url: https://download.docker.com/linux/ubuntu/gpg
+      dest: /etc/apt/keyrings/docker.asc
+      mode: '0644'
+      force: true
+
+  - name: De-armor Docker GPG key for APT
+    command: gpg --dearmor --yes --output /etc/apt/keyrings/docker.gpg /etc/apt/keyrings/docker.asc
+    args:
+       creates: /etc/apt/keyrings/docker.gpg
+
+  - name: Add Docker repository
+    apt_repository:
+      repo: "deb [signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+      state: present
+      filename: docker
+
+  - name: Update apt and install Docker Engine
+    apt:
+      pkg:
+        - docker-ce
+        - docker-ce-cli
+        - containerd.io
+        - docker-buildx-plugin
+        - docker-compose-plugin
+      state: latest
+      update_cache: true
+
+  - name: Install Docker Module for Python
+    pip:
+      name: docker
+
+  - name: Install git
+    apt:
+      name: git
+      state: latest
+      update_cache: true
+  
+  - name: Cloning repo
+    git:
+      repo: https://github.com/abdulsamadshahid/My_portfolio
+      dest: /home/ubuntu/My_portfolio
+    
+  - name: build image
+    community.docker.docker_image:
+      name: my_portfolio
+      build:
+        path: /home/ubuntu/My_portfolio
+      source: build
+
+  - name: Start container from the built image
+    community.docker.docker_container:
+      name: running_my_portfolio
+      image: my_portfolio
+      state: started
+      published_ports:
+        - "80:80"
+      
