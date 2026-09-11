@@ -14,4 +14,4 @@ jobs:
           chmod 600 id_rsa
           sudo apt update
           sudo apt install -y ansible
-          ansible-playbook -i inventory.ini install_packages.yml --private-key id_rsa
+          ansible-playbook -i inventory.ini ./ansible/install_packages.yml --private-key id_rsa
